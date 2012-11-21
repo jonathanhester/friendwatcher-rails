@@ -9,6 +9,12 @@ gem 'sqlite3'
 gem 'mysql2'
 
 
+#for facebook
+gem 'koala'
+
+gem 'delayed_job'
+gem 'delayed_job_active_record'
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
