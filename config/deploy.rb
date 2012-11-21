@@ -11,6 +11,20 @@ role :web, "jonathanhester.com"                          # Your HTTP server, Apa
 role :app, "jonathanhester.com"                          # This may be the same as your `Web` server
 role :db,  "jonathanhester.com", :primary => true # This is where Rails migrations will run
 
+set :rvm_ruby_string, 'ruby-1.9.2-p318@friendwatcher'
+require "rvm/capistrano"
+
+set :rvm_type, :system  # Copy the exact line. I really mean :system here
+
+before 'deploy:setup', 'rvm:install_rvm'
+
+before 'deploy:setup', 'rvm:install_ruby'
+
+set :rvm_install_ruby_params, '--with-opt-dir=/usr/local/rvm/usr'
+before 'deploy:setup', 'rvm:install_pkgs'
+
+before 'deploy:setup', 'rvm:import_gemset'
+
 # if you want to clean up old releases on each deploy uncomment this:
 # after "deploy:restart", "deploy:cleanup"
 
