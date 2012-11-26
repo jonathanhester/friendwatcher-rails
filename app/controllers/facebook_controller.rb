@@ -6,7 +6,7 @@ class FacebookController < ApplicationController
     if(realtime_request?(request))
       case request.method
         when "GET"
-          challenge = Koala::Facebook::RealtimeUpdates.meet_challenge(params,'SOME_TOKEN_HERE')
+          challenge = Koala::Facebook::RealtimeUpdates.meet_challenge(params,'')
           if(challenge)
             render :text => challenge
           else
@@ -16,7 +16,8 @@ class FacebookController < ApplicationController
           req = ActiveSupport::JSON.decode(request.body)
           req['entry'].each do |entry|
             uid = entry['uid']
-            User.receive_update uid
+            user = User.find_by_fbid(uid)
+            user.try(:receive_update)
           end
           render :text => 'Thanks for the update.'
       end
