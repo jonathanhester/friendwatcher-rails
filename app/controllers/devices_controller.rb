@@ -1,17 +1,15 @@
 class DevicesController < ApplicationController
 
+  skip_before_filter :verify_authenticity_token
+
   def create
-    fbid = params[:fbid]
+    fbid = params[:user_id]
     token = params[:token]
-    if User.verify(fbid, token)
-      user = User.where(fbid: fbid).first_or_create
-      user.token = token
-      if user.save!
-        device = user.devices.where(device_id: params[:device_id]).first_or_create
-        device.registration_id = params[:registrationId]
-        if device.save
-          render :inline => user.id
-        end
+    if user = User.verify(fbid, token)
+      device = user.devices.where(device_id: params[:device_id]).first_or_create
+      device.registration_id = params[:registrationId]
+      if device.save
+        render :inline => "1"
       end
     end
     render :inline => "0"

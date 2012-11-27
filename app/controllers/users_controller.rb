@@ -1,7 +1,16 @@
 class UsersController < ApplicationController
 
+  skip_before_filter :verify_authenticity_token
+
   def create
-    Rails.logger.info "create"
+    fbid = params[:fbid]
+    token = params[:token]
+    user = User.validate_user(fbid, token)
+    if user
+      render :inline => "1"
+    else
+      render :inline => "0"
+    end
   end
 
   def show(id)
