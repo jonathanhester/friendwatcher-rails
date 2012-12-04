@@ -1,0 +1,11 @@
+defaults: &defaults
+  gcm_api_key: AIzaSyCJjitsSgACJnfrq4OqQzgmrUV6JWNKCJo
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

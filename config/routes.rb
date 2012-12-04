@@ -1,7 +1,7 @@
 FriendWatcherRails::Application.routes.draw do
   post "facebook/rtu"
 
-  resources :users, only: [:create, :show, :update] do
+  resources :users, only: [ :create, :show, :update ] do
     get :verify_token, :on => :member
     resources :devices, only: [:create, :delete, :update]
   end

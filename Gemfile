@@ -14,6 +14,7 @@ gem 'koala'
 
 gem 'delayed_job'
 gem 'delayed_job_active_record'
+gem 'gcm'
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -27,7 +28,12 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
+group :development do
+  gem 'annotate'
+end
+
 gem 'jquery-rails'
+gem 'haml'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

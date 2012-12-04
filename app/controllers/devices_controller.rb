@@ -6,13 +6,17 @@ class DevicesController < ApplicationController
     fbid = params[:user_id]
     token = params[:token]
     if user = User.verify(fbid, token)
-      device = user.devices.where(device_id: params[:device_id]).first_or_create
-      device.registration_id = params[:registrationId]
+      device = user.devices.where(device_id: params[:deviceId]).first_or_create
+      device.registration_id = params[:deviceRegistrationId]
       if device.save
         render :inline => "1"
+      else
+        render :inline => "0"
       end
+    else
+      render :inline => "0"
     end
-    render :inline => "0"
+
     Rails.logger.info "create"
   end
 

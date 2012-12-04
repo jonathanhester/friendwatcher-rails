@@ -13,16 +13,21 @@ class UsersController < ApplicationController
     end
   end
 
-  def show(id)
+  def show
+    @user = User.verify(params[:id], params[:token])
+  end
+
+  def update
     Rails.logger.info "create"
   end
 
-  def update(id)
-    Rails.logger.info "create"
-  end
-
-  def verify_token(id)
-    Rails.logger.info "create"
+  def verify_token
+    user = User.where(fbid: params[:id]).first
+    if user && user.token == params[:token]
+      render :inline => "1"
+    else
+      render :inline => "0"
+    end
   end
 
 end

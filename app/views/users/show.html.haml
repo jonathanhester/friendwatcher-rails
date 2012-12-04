@@ -1,0 +1,19 @@
+- if @user
+  - if @user.last_synced.nil?
+    Updating...
+  - else
+    Total Friends:
+    = @user.friends.current.count
+    Last Updated:
+    = @user.last_synced
+    Started Tracking:
+    = @user.created_at
+    Removed:
+    = @user.friends.removed.count
+    - @user.friends.removed.each do |friend|
+      .row
+        = link_to friend.name, "http://www.facebook.com/profile.php?id=#{friend.id}"
+        removed on
+        = friend.status_modified_date
+- else
+  invalid
