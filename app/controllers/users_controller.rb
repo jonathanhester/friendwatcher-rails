@@ -1,7 +1,5 @@
 class UsersController < ApplicationController
 
-  skip_before_filter :verify_authenticity_token
-
   def create
     fbid = params[:fbid]
     token = params[:token]
@@ -15,6 +13,11 @@ class UsersController < ApplicationController
 
   def show
     @user = User.verify(params[:id], params[:token])
+    render json: { status: :invalid } if !@user
+    respond_to do |format|
+      format.html
+      format.json { render json: JSON.pretty_generate(@user.to_json) }
+    end
   end
 
   def update

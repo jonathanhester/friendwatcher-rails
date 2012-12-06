@@ -29,16 +29,48 @@ class User < ActiveRecord::Base
     end
   end
 
+  def to_json
+    if self.last_synced.nil?
+      status = :updating
+      meta = false
+      data = false
+    else
+      status = :current
+      meta = {
+         total: friends.current.count,
+         synced: last_synced,
+         created: created_at,
+         removed: friends.removed.count,
+      }
+
+      removed = []
+      friends.removed.each do |friend|
+        friend_data = {
+             link: "http://www.facebook.com/profile.php?id=#{friend.id}",
+             time: friend.status_modified_date
+        }
+        removed << friend_data
+      end
+
+      data = {
+          removed: removed
+      }
+    end
+
+    {
+        status: status,
+        meta: meta,
+        data: data
+    }
+  end
 
   def receive_update
     Rails.logger.info "Receive update #{self.fbid}"
-    self.reload_friends
-    gcm = GCM.new(APP_CONFIG['gcm_api_key'])
+    self.reload_friends_without_delay
     registration_ids= devices.map(&:registration_id)
-    options = {data: {score: "123"}, collapse_key: "updated_score"}
-    response = gcm.send_notification(registration_ids, options)
-    Rails.logger.info "registered"
+    GcmMessager.lost_friends(registration_ids)
   end
+  handle_asynchronously :receive_update
 
   def reload_friends
     self.update_attribute :last_synced, Time.now
@@ -72,10 +104,6 @@ class User < ActiveRecord::Base
     Rails.logger.info "Receive update #{friends}"
   end
   handle_asynchronously :reload_friends
-
-  def notify_user
-    Rails.logger.info "Notifying user of update #{self.fbid}"
-  end
 
   def self.fetch_user(fbid, token)
     @graph = Koala::Facebook::API.new(token)
