@@ -31,6 +31,8 @@ end
 group :development do
   gem 'annotate'
   gem 'quiet_assets'
+  # Gemfile in Rails app
+  gem "mocha", :require => false
 end
 
 gem 'jquery-rails'

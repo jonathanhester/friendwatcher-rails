@@ -15,6 +15,9 @@
 class Friend < ActiveRecord::Base
   belongs_to :user
 
+  validates_uniqueness_of :fbid, :scope => :user_id
+
   scope :current, where(status: :current)
   scope :removed, where(status: :removed)
+  scope :disabled, where(status: :disabled)
 end

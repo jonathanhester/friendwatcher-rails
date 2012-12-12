@@ -20,13 +20,19 @@ class User < ActiveRecord::Base
   end
 
   def self.validate_user(fbid, token)
-    fb_user = fetch_user(fbid, token)
+    begin
+      fb_user = fetch_user("me", token)
+    rescue  Exception => exc
+      fb_user = nil
+    end
     if fb_user
       user = User.where(fbid: fbid).first_or_create
       user.token = token
       user.save!
       user.reload_friends
+      return user
     end
+    false
   end
 
   def to_json
@@ -46,8 +52,9 @@ class User < ActiveRecord::Base
       removed = []
       friends.removed.each do |friend|
         friend_data = {
-             link: "http://www.facebook.com/profile.php?id=#{friend.id}",
-             time: friend.status_modified_date
+            name: friend.name,
+            link: "http://www.facebook.com/profile.php?id=#{friend.id}",
+            time: friend.status_modified_date
         }
         removed << friend_data
       end
@@ -84,20 +91,18 @@ class User < ActiveRecord::Base
       fbid = current_friend.fbid
       current_friends[fbid.to_s] = current_friend
       if !friends[fbid]
-        current_friend.status = :removed
-        current_friend.status_modified_date = Time.now
-        current_friend.save
+        add_removed_friend(current_friend)
       end
     end
 
     friends.each do |fbid, friend|
       if !current_friends[fbid]
-        new_friend = self.friends.create
+        new_friend = self.friends.where(fbid: fbid).first_or_create
         new_friend.fbid = fbid
         new_friend.status_modified_date = Time.now
         new_friend.status = :current
         new_friend.name = friend['name']
-        new_friend.save
+        new_friend.save!
       end
     end
 
@@ -107,7 +112,7 @@ class User < ActiveRecord::Base
 
   def self.fetch_user(fbid, token)
     @graph = Koala::Facebook::API.new(token)
-    profile = @graph.get_object("me")
+    profile = @graph.get_object(fbid)
     profile
   end
 
@@ -115,6 +120,16 @@ class User < ActiveRecord::Base
   def fetch_friends(fbid, token)
     @graph = Koala::Facebook::API.new(token)
     friends = @graph.get_object("me/friends")
-    friends
+  end
+
+  def add_removed_friend(friend)
+    begin
+      fb_response = User.fetch_user(friend.fbid, self.token)
+      friend.status = :removed
+    rescue Exception => exc
+      friend.status = :disabled
+    end
+    friend.status_modified_date = Time.now
+    friend.save
   end
 end

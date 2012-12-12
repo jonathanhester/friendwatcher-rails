@@ -13,7 +13,7 @@ class UsersController < ApplicationController
 
   def show
     @user = User.verify(params[:id], params[:token])
-    render json: { status: :invalid } if !@user
+    render json: { status: :invalid } and return if !@user
     respond_to do |format|
       format.html
       format.json { render json: JSON.pretty_generate(@user.to_json) }
