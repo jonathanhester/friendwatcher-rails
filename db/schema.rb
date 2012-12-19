@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121203072658) do
+ActiveRecord::Schema.define(:version => 20121219041809) do
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -37,14 +37,23 @@ ActiveRecord::Schema.define(:version => 20121203072658) do
     t.datetime "updated_at",      :null => false
   end
 
+  create_table "friend_events", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "fbid"
+    t.string   "name"
+    t.string   "event"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
   create_table "friends", :force => true do |t|
     t.integer  "user_id"
     t.string   "fbid"
     t.string   "name"
     t.datetime "status_modified_date"
-    t.string   "status"
     t.datetime "created_at",           :null => false
     t.datetime "updated_at",           :null => false
+    t.string   "status"
   end
 
   create_table "users", :force => true do |t|

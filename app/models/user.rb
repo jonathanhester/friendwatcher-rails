@@ -3,16 +3,18 @@
 # Table name: users
 #
 #  id                 :integer          not null, primary key
-#  fbid               :integer
+#  fbid               :string(255)
 #  token              :string(255)
 #  token_invalid_date :datetime
 #  token_invalid      :boolean
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
+#  last_synced        :datetime
 #
 
 class User < ActiveRecord::Base
   has_many :friends
+  has_many :friend_events
   has_many :devices
 
   def self.verify(fbid, token)
@@ -46,15 +48,15 @@ class User < ActiveRecord::Base
          total: friends.current.count,
          synced: last_synced,
          created: created_at,
-         removed: friends.removed.count,
+         removed: friend_events.removed.count,
       }
 
       removed = []
-      friends.removed.each do |friend|
+      friend_events.removed.each do |friend_event|
         friend_data = {
-            name: friend.name,
-            link: "http://www.facebook.com/profile.php?id=#{friend.id}",
-            time: friend.status_modified_date
+            name: friend_event.name,
+            link: "http://www.facebook.com/profile.php?id=#{friend_event.fbid}",
+            time: friend_event.updated_at
         }
         removed << friend_data
       end
@@ -98,7 +100,7 @@ class User < ActiveRecord::Base
     friends.each do |fbid, friend|
       if !current_friends[fbid]
         new_friend = self.friends.where(fbid: fbid).first_or_create
-        new_friend.fbid = fbid
+        new_friend.fbid = fbid.to_s
         new_friend.status_modified_date = Time.now
         new_friend.status = :current
         new_friend.name = friend['name']
@@ -120,16 +122,22 @@ class User < ActiveRecord::Base
   def fetch_friends(fbid, token)
     @graph = Koala::Facebook::API.new(token)
     friends = @graph.get_object("me/friends")
+    friends.slice(0, 300)
   end
 
   def add_removed_friend(friend)
     begin
       fb_response = User.fetch_user(friend.fbid, self.token)
-      friend.status = :removed
+      friend_event = self.friend_events.create
+      friend_event.fbid = friend.fbid
+      friend_event.name = friend.name
+      friend_event.event = :removed
+      friend_event.save
+      friend.delete
     rescue Exception => exc
       friend.status = :disabled
+      friend.status_modified_date = Time.now
+      friend.save
     end
-    friend.status_modified_date = Time.now
-    friend.save
   end
 end

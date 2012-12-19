@@ -9,11 +9,11 @@
     Started Tracking:
     = @user.created_at
     Removed:
-    = @user.friends.removed.count
-    - @user.friends.removed.each do |friend|
+    = @user.friend_events.removed.count
+    - @user.friend_events.removed.each do |friend|
       .row
         = link_to friend.name, "http://www.facebook.com/profile.php?id=#{friend.id}"
         removed on
-        = friend.status_modified_date
+        = friend.updated_at
 - else
   invalid

@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id                 :integer          not null, primary key
+#  fbid               :string(255)
+#  token              :string(255)
+#  token_invalid_date :datetime
+#  token_invalid      :boolean
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  last_synced        :datetime
+#
+
 require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
@@ -10,6 +24,11 @@ class UserTest < ActiveSupport::TestCase
       "name" => "Altay Guvench",
       "id" => "4345"
   }
+  FRIENDS_BOGLE = {
+      "name" => "Brian Bogle",
+      "id" => "757084104"
+  }
+
 
   test "verify valid user" do
     user = users(:one)
@@ -59,7 +78,7 @@ class UserTest < ActiveSupport::TestCase
     user.stubs(:fetch_friends).returns([FRIENDS_WILL, FRIENDS_ALTAY])
     user.reload_friends
     assert_equal 2, user.friends.current.count
-    assert_equal 2, user.friends.count
+    assert_equal 1, user.friend_events.removed.count
   end
 
   test "reload friends - dropped Altay" do
@@ -68,9 +87,20 @@ class UserTest < ActiveSupport::TestCase
     User.stubs(:fetch_user).returns(FRIENDS_ALTAY)
     user.reload_friends
     assert_equal 1, user.friends.current.count
-    assert_equal 1, user.friends.removed.count
-    assert_equal 2, user.friends.count
-    assert_equal "4345", user.friends.removed.first.fbid
+    assert_equal 2, user.friend_events.removed.count
+    assert_equal 1, user.friends.count
+    assert user.friend_events.removed.map(&:fbid).include?("4345")
+  end
+
+  test "reload friends - added bogle back" do
+    user = users(:one)
+    user.stubs(:fetch_friends).returns([FRIENDS_WILL, FRIENDS_ALTAY, FRIENDS_BOGLE])
+    User.stubs(:fetch_user).returns(FRIENDS_ALTAY)
+    user.reload_friends
+    assert_equal 3, user.friends.current.count
+    assert_equal 1, user.friend_events.removed.count
+    assert_equal 3, user.friends.count
+    assert_equal "757084104", user.friend_events.removed.first.fbid
   end
 
   test "reload friends - Altay hid profile" do
@@ -79,9 +109,9 @@ class UserTest < ActiveSupport::TestCase
     User.stubs(:fetch_user).raises
     user.reload_friends
     assert_equal 1, user.friends.current.count, "should have 1 current"
-    assert_equal 0, user.friends.removed.count, "should have 0 removed"
+    assert_equal 1, user.friend_events.removed.count, "should have 1 removed"
     assert_equal 1, user.friends.disabled.count, "should have 1 disabled"
-    assert_equal 2, user.friends.count, "should have 2 total"
+    assert_equal 2, user.friends.count, "should have 3 total"
     assert_equal "4345", user.friends.disabled.first.fbid
   end
 
@@ -93,7 +123,7 @@ class UserTest < ActiveSupport::TestCase
     user.reload_friends
     assert_equal 2, user.friends.current.count, "should have 2 current"
     assert_equal 0, user.friends.disabled.count, "should have 0 disabled"
-    assert_equal 2, user.friends.count, "should have 2 total"
+    assert_equal 2, user.friends.count, "should have 3 total"
   end
 
 end

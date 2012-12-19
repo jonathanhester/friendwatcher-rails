@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: friends
+#
+#  id                   :integer          not null, primary key
+#  user_id              :integer
+#  fbid                 :string(255)
+#  name                 :string(255)
+#  status_modified_date :datetime
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  status               :string(255)
+#
+
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 # This model initially had no columns defined.  If you add columns to the
@@ -8,10 +22,13 @@ friend1:
   user: one
   status: current
   fbid: 194
+  name: "Will Chen"
 # column: value
 #
 friend2:
   user: one
   status: current
   fbid: 4345
+  name: "Altay"
 #  column: value
+
