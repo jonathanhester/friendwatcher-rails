@@ -122,7 +122,6 @@ class User < ActiveRecord::Base
   def fetch_friends(fbid, token)
     @graph = Koala::Facebook::API.new(token)
     friends = @graph.get_object("me/friends")
-    friends.slice(0, 300)
   end
 
   def add_removed_friend(friend)
