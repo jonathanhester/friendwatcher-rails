@@ -40,8 +40,15 @@ class User < ActiveRecord::Base
   def to_json
     if self.last_synced.nil?
       status = :updating
-      meta = false
-      data = false
+      meta = {
+          total: "Updating...",
+          synced: "Syncing now...",
+          created: created_at,
+          removed: 0,
+      }
+      data = {
+          removed: []
+      }
     else
       status = :current
       meta = {
