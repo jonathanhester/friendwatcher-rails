@@ -84,9 +84,25 @@ class User < ActiveRecord::Base
     Rails.logger.info "Receive update #{self.fbid}"
     self.reload_friends_without_delay
     registration_ids= devices.map(&:registration_id)
-    GcmMessager.lost_friends(registration_ids)
+    response = GcmMessager.lost_friends(registration_ids)
+    response
   end
   handle_asynchronously :receive_update
+
+  def force_refesh
+    Rails.logger.info "Force refresh #{self.fbid}"
+    self.reload_friends_without_delay
+    registration_ids= devices.map(&:registration_id)
+    response = GcmMessager.force_refresh(registration_ids)
+    response
+  end
+  handle_asynchronously :force_refesh
+
+  def test_push
+    registration_ids= devices.map(&:registration_id)
+    response = GcmMessager.test_push(registration_ids)
+    response
+  end
 
   def reload_friends
     self.update_attribute :last_synced, Time.now

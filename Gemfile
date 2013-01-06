@@ -35,6 +35,10 @@ group :development do
   gem "mocha", :require => false
 end
 
+group :production do
+  gem 'thin'
+end
+
 gem 'jquery-rails'
 gem 'haml'
 

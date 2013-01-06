@@ -20,14 +20,31 @@ class UsersController < ApplicationController
     end
   end
 
-  def update
-    Rails.logger.info "create"
+  def verify_token
+    @user = User.verify(params[:id], params[:token])
+    if @user
+      render :inline => "1"
+    else
+      render :inline => "0"
+    end
   end
 
-  def verify_token
-    user = User.where(fbid: params[:id]).first
-    if user && user.token == params[:token]
+  def force_refresh
+    @user = User.verify(params[:id], params[:token])
+    if @user
+      response = @user.force_refesh
       render :inline => "1"
+    else
+      render :inline => "0"
+    end
+  end
+
+  def test_push
+    @user = User.verify(params[:id], params[:token])
+    if @user
+      response = @user.test_push
+      render :inline => "1" if response[:status] == 200
+      render :inline => "1" if response[:status] != 200
     else
       render :inline => "0"
     end
