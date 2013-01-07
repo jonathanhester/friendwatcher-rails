@@ -15,6 +15,7 @@ gem 'koala'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
 gem 'gcm'
+gem 'httparty'
 
 # Gems used only for assets and not required
 # in production environments by default.

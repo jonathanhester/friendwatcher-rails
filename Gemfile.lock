@@ -151,6 +151,7 @@ DEPENDENCIES
   delayed_job_active_record
   gcm
   haml
+  httparty
   jquery-rails
   koala
   mocha
