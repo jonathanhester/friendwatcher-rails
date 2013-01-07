@@ -4,7 +4,7 @@ class FacebookController < ApplicationController
     if(realtime_request?(request))
       case request.method
         when "GET"
-          challenge = Koala::Facebook::RealtimeUpdates.meet_challenge(params,'')
+          challenge = Koala::Facebook::RealtimeUpdates.meet_challenge(params,'asdf')
           if(challenge)
             render :text => challenge
           else
