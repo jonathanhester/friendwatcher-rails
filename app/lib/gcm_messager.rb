@@ -1,11 +1,14 @@
 class GcmMessager
-  def self.lost_friends(registration_ids)
+  def self.friends_changed(registration_ids, added, removed)
     message = "Your friends list has changed!"
 
     gcm = GCM.new(APP_CONFIG['gcm_api_key'])
 
     options = {data: {message: message, type: :rtu}, collapse_key: "updated_list"}
-    response = gcm.send_notification(registration_ids, options)
+
+    if (added.count > 0 || removed.count > 0 || user.fbid == "3624241")
+      response = gcm.send_notification(registration_ids, options)
+    end
   end
 
   def self.force_refresh(registration_ids)

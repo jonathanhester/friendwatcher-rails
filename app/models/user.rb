@@ -10,6 +10,7 @@
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  last_synced        :datetime
+#  name               :string(255)
 #
 
 class User < ActiveRecord::Base
@@ -30,6 +31,7 @@ class User < ActiveRecord::Base
     if fb_user
       user = User.where(fbid: fbid).first_or_create
       user.token = token
+      user.name = fb_user['name']
       user.save!
       user.reload_friends(true)
       return user
@@ -38,40 +40,28 @@ class User < ActiveRecord::Base
   end
 
   def to_json
-    if self.last_synced.nil?
-      status = :updating
-      meta = {
-          total: "Updating...",
-          synced: "Syncing now...",
-          created: created_at,
-          removed: 0,
-      }
-      data = {
-          removed: []
-      }
-    else
-      status = :current
-      meta = {
-         total: friends.current.count,
-         synced: last_synced,
-         created: created_at,
-         removed: friend_events.removed.count,
-      }
+    status = :current
+    meta = {
+        name: self.name,
+        total: friends.current.count,
+        synced: last_synced,
+        created: created_at,
+        removed: friend_events.removed.count,
+    }
 
-      removed = []
-      friend_events.removed.each do |friend_event|
-        friend_data = {
-            name: friend_event.name,
-            link: "http://www.facebook.com/profile.php?id=#{friend_event.fbid}",
-            time: friend_event.updated_at
-        }
-        removed << friend_data
-      end
-
-      data = {
-          removed: removed
+    removed = []
+    friend_events.removed.each do |friend_event|
+      friend_data = {
+          name: friend_event.name,
+          link: "http://www.facebook.com/profile.php?id=#{friend_event.fbid}",
+          time: friend_event.updated_at
       }
+      removed << friend_data
     end
+
+    data = {
+        removed: removed
+    }
 
     {
         status: status,
@@ -82,8 +72,8 @@ class User < ActiveRecord::Base
 
   def receive_update
     Rails.logger.info "Receive update #{self.fbid}"
-    self.reload_friends_without_delay
-    response = GcmMessager.lost_friends(registration_ids)
+    (added, removed) = self.reload_friends_without_delay
+    response = GcmMessager.friends_changed(registration_ids, added, removed)
     response
   end
   handle_asynchronously :receive_update
@@ -153,6 +143,7 @@ class User < ActiveRecord::Base
   def fetch_friends(fbid, token)
     @graph = Koala::Facebook::API.new(token)
     friends = @graph.get_object("me/friends")
+    friends
   end
 
   def add_removed_friend(friend)
