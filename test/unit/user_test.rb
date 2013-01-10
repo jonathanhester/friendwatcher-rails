@@ -48,6 +48,15 @@ class UserTest < ActiveSupport::TestCase
     assert found_user
   end
 
+  test "reload friends - first time" do
+    user = users(:no_friends)
+    user.stubs(:fetch_friends).returns([FRIENDS_WILL, FRIENDS_ALTAY])
+    user.reload_friends(true)
+    assert_equal 2, user.friends.current.count
+    assert_equal 2, user.friends.count
+    assert_equal 0, user.friend_events.count
+  end
+
   test "validates valid user - token changed" do
     user = users(:one)
     User.any_instance.stubs(:reload_friends)
@@ -64,12 +73,13 @@ class UserTest < ActiveSupport::TestCase
   end
 
 
-  test "reload friends - first time" do
+  test "reload friends - added 2" do
     user = users(:no_friends)
     user.stubs(:fetch_friends).returns([FRIENDS_WILL, FRIENDS_ALTAY])
     user.reload_friends
     assert_equal 2, user.friends.current.count
     assert_equal 2, user.friends.count
+    assert_equal 2, user.friend_events.added.count
   end
 
 
@@ -96,7 +106,8 @@ class UserTest < ActiveSupport::TestCase
     user = users(:one)
     user.stubs(:fetch_friends).returns([FRIENDS_WILL, FRIENDS_ALTAY, FRIENDS_BOGLE])
     User.stubs(:fetch_user).returns(FRIENDS_ALTAY)
-    user.reload_friends
+    (added, removed) = user.reload_friends_without_delay
+    assert_equal 1, added.count
     assert_equal 3, user.friends.current.count
     assert_equal 1, user.friend_events.removed.count
     assert_equal 3, user.friends.count

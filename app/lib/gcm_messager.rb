@@ -25,4 +25,13 @@ class GcmMessager
     options = {data: {message: message, type: :test}, collapse_key: "test"}
     response = gcm.send_notification(registration_ids, options)
   end
+
+  def self.initial_push(registration_ids)
+    message = "Your friends list is being monitored!"
+
+    gcm = GCM.new(APP_CONFIG['gcm_api_key'])
+
+    options = {data: {message: message, type: :test}, collapse_key: "test"}
+    response = gcm.send_notification(registration_ids, options)
+  end
 end

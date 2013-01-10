@@ -31,7 +31,7 @@ class User < ActiveRecord::Base
       user = User.where(fbid: fbid).first_or_create
       user.token = token
       user.save!
-      user.reload_friends
+      user.reload_friends(true)
       return user
     end
     false
@@ -83,7 +83,6 @@ class User < ActiveRecord::Base
   def receive_update
     Rails.logger.info "Receive update #{self.fbid}"
     self.reload_friends_without_delay
-    registration_ids= devices.map(&:registration_id)
     response = GcmMessager.lost_friends(registration_ids)
     response
   end
@@ -92,19 +91,23 @@ class User < ActiveRecord::Base
   def force_refesh
     Rails.logger.info "Force refresh #{self.fbid}"
     self.reload_friends_without_delay
-    registration_ids= devices.map(&:registration_id)
     response = GcmMessager.force_refresh(registration_ids)
     response
   end
   handle_asynchronously :force_refesh
 
+  def registration_ids
+    devices.map(&:registration_id)
+  end
+
   def test_push
-    registration_ids= devices.map(&:registration_id)
     response = GcmMessager.test_push(registration_ids)
     response
   end
 
-  def reload_friends
+  def reload_friends(initial = false)
+    added_friends = []
+    removed_friends = []
     self.update_attribute :last_synced, Time.now
     response = fetch_friends(self.fbid, self.token)
     friends = {}
@@ -116,22 +119,27 @@ class User < ActiveRecord::Base
       fbid = current_friend.fbid
       current_friends[fbid.to_s] = current_friend
       if !friends[fbid]
-        add_removed_friend(current_friend)
+        removed_friends << add_removed_friend(current_friend)
       end
     end
 
     friends.each do |fbid, friend|
       if !current_friends[fbid]
         new_friend = self.friends.where(fbid: fbid).first_or_create
+        should_add_friend_event = (new_friend.status != :disabled && !initial)
         new_friend.fbid = fbid.to_s
         new_friend.status_modified_date = Time.now
         new_friend.status = :current
         new_friend.name = friend['name']
         new_friend.save!
+        if should_add_friend_event
+          added_friends << add_added_friend(new_friend)
+        end
       end
     end
-
     Rails.logger.info "Receive update #{friends}"
+    GcmMessager.initial_push(registration_ids) if initial
+    return [added_friends.compact, removed_friends.compact]
   end
   handle_asynchronously :reload_friends
 
@@ -156,10 +164,20 @@ class User < ActiveRecord::Base
       friend_event.event = :removed
       friend_event.save
       friend.delete
+      friend_event
     rescue Exception => exc
       friend.status = :disabled
       friend.status_modified_date = Time.now
       friend.save
     end
+  end
+
+  def add_added_friend(friend)
+    friend_event = self.friend_events.create
+    friend_event.fbid = friend.fbid
+    friend_event.name = friend.name
+    friend_event.event = :added
+    friend_event.save
+    friend_event
   end
 end
