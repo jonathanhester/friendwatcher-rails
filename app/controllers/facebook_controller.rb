@@ -17,7 +17,7 @@ class FacebookController < ApplicationController
             user = User.find_by_fbid(uid)
             user.try(:receive_update)
           end
-          response = relay_request(req)
+          RelayRequest.delay.relay_request(req)
           render :text => 'Thanks for the update.'
       end
     end
@@ -28,16 +28,6 @@ class FacebookController < ApplicationController
   def realtime_request?(request)
     ((request.method == "GET" && params['hub.mode'].present?) ||
         (request.method == "POST" && request.headers['X-Hub-Signature'].present?))
-  end
-
-  def relay_request(req)
-    url = "http://fbfriendswatcher.appspot.com/fbupdate"
-
-    response = HTTParty.post(url, {
-        body: req.to_json,
-        headers: {"X-Hub-Signature" => "123"}
-    })
-    response
   end
 
 end
