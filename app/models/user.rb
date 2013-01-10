@@ -49,18 +49,19 @@ class User < ActiveRecord::Base
         removed: friend_events.removed.count,
     }
 
-    removed = []
-    friend_events.removed.each do |friend_event|
+    events = []
+    friend_events.order('created_at desc').each do |friend_event|
       friend_data = {
           name: friend_event.name,
           link: "http://www.facebook.com/profile.php?id=#{friend_event.fbid}",
-          time: friend_event.updated_at
+          time: friend_event.updated_at,
+          event_type: friend_event.event
       }
-      removed << friend_data
+      events << friend_data
     end
 
     data = {
-        removed: removed
+        events: events
     }
 
     {
@@ -73,7 +74,7 @@ class User < ActiveRecord::Base
   def receive_update
     Rails.logger.info "Receive update #{self.fbid}"
     (added, removed) = self.reload_friends_without_delay
-    response = GcmMessager.friends_changed(registration_ids, added, removed)
+    response = GcmMessager.friends_changed(registration_ids, added, removed, self)
     response
   end
   handle_asynchronously :receive_update

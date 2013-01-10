@@ -35,5 +35,5 @@ FriendWatcherRails::Application.configure do
   # Expands the lines which load the assets
   config.assets.debug = true
 
-  Delayed::Worker.delay_jobs = false
+  #Delayed::Worker.delay_jobs = false
 end

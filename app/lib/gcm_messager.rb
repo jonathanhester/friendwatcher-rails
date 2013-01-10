@@ -1,5 +1,5 @@
 class GcmMessager
-  def self.friends_changed(registration_ids, added, removed)
+  def self.friends_changed(registration_ids, added, removed, user)
     message = "Your friends list has changed!"
 
     gcm = GCM.new(APP_CONFIG['gcm_api_key'])

@@ -82,7 +82,6 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 2, user.friend_events.added.count
   end
 
-
   test "reload friends - no changes" do
     user = users(:one)
     user.stubs(:fetch_friends).returns([FRIENDS_WILL, FRIENDS_ALTAY])
