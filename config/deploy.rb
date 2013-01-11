@@ -9,7 +9,7 @@ set :scm, :git # You can set :scm explicitly or Capistrano will make an intellig
 
 role :web, "jonathanhester.com"                          # Your HTTP server, Apache/etc
 role :app, "jonathanhester.com"                          # This may be the same as your `Web` server
-role :db,  "mysql.cmc1ol5tnfvs.us-east-1.rds.amazonaws.com", :primary => true # This is where Rails migrations will run
+role :db,  "jonathanhester.com", :primary => true # This is where Rails migrations will run
 
 set :rvm_ruby_string, 'ruby-1.9.3-p327@friendwatcher'
 require "rvm/capistrano"
