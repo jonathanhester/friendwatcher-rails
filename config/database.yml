@@ -25,4 +25,4 @@ production:
   database: fw
   username: www-data
   password: hcUQLh9v
-  host: jonathanhester.com
+  host: mysql.cmc1ol5tnfvs.us-east-1.rds.amazonaws.com
