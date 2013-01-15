@@ -22,7 +22,7 @@ class UsersController < ApplicationController
 
   def verify_token
     @user = User.verify(params[:id], params[:token])
-    if @user
+    if @user && !@user.token_invalid
       render :inline => "1"
     else
       render :inline => "0"
@@ -32,7 +32,7 @@ class UsersController < ApplicationController
   def force_refresh
     @user = User.verify(params[:id], params[:token])
     if @user
-      response = @user.force_refesh
+      response = @user.force_refresh
       render :inline => "1"
     else
       render :inline => "0"

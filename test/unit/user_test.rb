@@ -136,4 +136,42 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 2, user.friends.count, "should have 3 total"
   end
 
+  test "receives update and sends success gcm" do
+    user = users(:one)
+    user.stubs(:fetch_friends).returns([])
+    GcmMessager.expects(:friends_changed).returns(true)
+    user.receive_update
+  end
+
+  test "receives update and sends error gcm" do
+    user = users(:one)
+    user.stubs(:fetch_friends).raises(Koala::Facebook::APIError)
+    GcmMessager.expects(:invalid_token).returns(true)
+    user.receive_update
+  end
+
+  test "reload friends sets token_invalid on error" do
+    user = users(:one)
+    user.stubs(:fetch_friends).raises(Koala::Facebook::APIError)
+    assert_raise Koala::Facebook::APIError do
+      user.reload_friends
+      assert_equal true, user.token_invalid, "should mark token invalid"
+    end
+  end
+
+  test "force refresh and sends success GCM" do
+    user = users(:one)
+    user.stubs(:fetch_friends).returns([])
+    GcmMessager.expects(:force_refresh).returns(true)
+    user.force_refresh
+
+  end
+
+  test "force refresh and sends error GCM" do
+    user = users(:one)
+    user.stubs(:fetch_friends).raises(Koala::Facebook::APIError)
+    GcmMessager.expects(:invalid_token).returns(true)
+    user.force_refresh
+  end
+
 end

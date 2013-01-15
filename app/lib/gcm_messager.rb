@@ -37,4 +37,14 @@ class GcmMessager
     options = {data: {message: message, type: :test}, collapse_key: "test"}
     response = gcm.send_notification(registration_ids, options)
   end
+
+  def self.invalid_token(registration_ids)
+    message = "FriendWatcher needs to open so the FB token can refresh!"
+
+    gcm = GCM.new(APP_CONFIG['gcm_api_key'])
+
+    options = {data: {message: message, type: :test}, collapse_key: "test"}
+    response = gcm.send_notification(registration_ids, options)
+
+  end
 end

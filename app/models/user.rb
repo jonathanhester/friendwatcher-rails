@@ -25,7 +25,7 @@ class User < ActiveRecord::Base
   def self.validate_user(fbid, token)
     begin
       fb_user = fetch_user("me", token)
-    rescue  Exception => exc
+    rescue
       fb_user = nil
     end
     if fb_user
@@ -73,19 +73,27 @@ class User < ActiveRecord::Base
 
   def receive_update
     Rails.logger.info "Receive update #{self.fbid}"
-    (added, removed) = self.reload_friends_without_delay
-    response = GcmMessager.friends_changed(registration_ids, added, removed, self)
+    begin
+      (added, removed) = self.reload_friends_without_delay
+      response = GcmMessager.friends_changed(registration_ids, added, removed, self)
+    rescue
+      response = GcmMessager.invalid_token(registration_ids)
+    end
     response
   end
   handle_asynchronously :receive_update
 
-  def force_refesh
+  def force_refresh
     Rails.logger.info "Force refresh #{self.fbid}"
-    self.reload_friends_without_delay
-    response = GcmMessager.force_refresh(registration_ids)
+    begin
+      self.reload_friends_without_delay
+      response = GcmMessager.force_refresh(registration_ids)
+    rescue
+      response = GcmMessager.invalid_token(registration_ids)
+    end
     response
   end
-  handle_asynchronously :force_refesh
+  handle_asynchronously :force_refresh
 
   def registration_ids
     devices.map(&:registration_id)
@@ -100,7 +108,14 @@ class User < ActiveRecord::Base
     added_friends = []
     removed_friends = []
     self.update_attribute :last_synced, Time.now
-    response = fetch_friends(self.fbid, self.token)
+    begin
+      response = fetch_friends(self.fbid, self.token)
+    rescue
+      self.token_invalid = true
+      self.token_invalid_date = Time.now
+      self.save
+      raise
+    end
     friends = {}
     response.each do |friend|
       friends[friend['id']] = friend
@@ -157,7 +172,7 @@ class User < ActiveRecord::Base
       friend_event.save
       friend.delete
       friend_event
-    rescue Exception => exc
+    rescue
       friend.status = :disabled
       friend.status_modified_date = Time.now
       friend.save
