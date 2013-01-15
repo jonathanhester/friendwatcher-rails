@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130110034018) do
+ActiveRecord::Schema.define(:version => 20130115014327) do
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -37,6 +37,8 @@ ActiveRecord::Schema.define(:version => 20130110034018) do
     t.datetime "updated_at",      :null => false
   end
 
+  add_index "devices", ["user_id"], :name => "index_devices_on_user_id"
+
   create_table "friend_events", :force => true do |t|
     t.integer  "user_id"
     t.string   "fbid"
@@ -45,6 +47,8 @@ ActiveRecord::Schema.define(:version => 20130110034018) do
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
+
+  add_index "friend_events", ["user_id"], :name => "index_friend_events_on_user_id"
 
   create_table "friends", :force => true do |t|
     t.integer  "user_id"
@@ -56,6 +60,8 @@ ActiveRecord::Schema.define(:version => 20130110034018) do
     t.string   "status"
   end
 
+  add_index "friends", ["user_id", "fbid"], :name => "index_friends_on_user_id_and_fbid"
+
   create_table "users", :force => true do |t|
     t.string   "fbid"
     t.string   "token"
@@ -66,5 +72,7 @@ ActiveRecord::Schema.define(:version => 20130110034018) do
     t.datetime "last_synced"
     t.string   "name"
   end
+
+  add_index "users", ["fbid"], :name => "index_users_on_fbid"
 
 end
