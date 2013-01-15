@@ -32,6 +32,7 @@ class User < ActiveRecord::Base
       user = User.where(fbid: fbid).first_or_create
       user.token = token
       user.name = fb_user['name']
+      user.token_invalid = false
       user.save!
       user.reload_friends(true)
       return user

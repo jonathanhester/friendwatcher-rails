@@ -62,6 +62,7 @@ namespace :toldo do
   end
 end
 
+set :delayed_job_args, "-n 2"
 require "delayed/recipes"
 
 set :rails_env, "production" #added for delayed job
