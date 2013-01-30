@@ -16,7 +16,10 @@ class UsersController < ApplicationController
     render json: { status: :invalid } and return if !@user
     respond_to do |format|
       format.html
-      format.json { render json: JSON.pretty_generate(@user.to_json) }
+      format.json do
+        json = @user.to_json(params[:page], params[:per])
+        render json: JSON.pretty_generate(json)
+      end
     end
   end
 

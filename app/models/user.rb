@@ -40,7 +40,7 @@ class User < ActiveRecord::Base
     false
   end
 
-  def to_json
+  def to_json(page = nil, per = nil)
     status = :current
     meta = {
         name: self.name,
@@ -51,7 +51,8 @@ class User < ActiveRecord::Base
     }
 
     events = []
-    friend_events.order('created_at desc').each do |friend_event|
+    friend_events_rel = friend_events.page(page).per(per).order('created_at desc')
+    friend_events_rel.each do |friend_event|
       friend_data = {
           name: friend_event.name,
           link: "http://www.facebook.com/profile.php?id=#{friend_event.fbid}",
@@ -65,11 +66,13 @@ class User < ActiveRecord::Base
         events: events
     }
 
-    {
+    result = {
+        isLast: friend_events_rel.num_pages <= page.to_i,
         status: status,
-        meta: meta,
         data: data
     }
+    result[:meta] = meta if page.present? && page.to_i == 1
+    result
   end
 
   def receive_update
@@ -144,7 +147,7 @@ class User < ActiveRecord::Base
         end
       end
     end
-    Rails.logger.info "Receive update #{friends}"
+    Rails.logger.info "Receive update friends (#{friends.count})"
     GcmMessager.initial_push(registration_ids) if initial
     return [added_friends.compact, removed_friends.compact]
   end
