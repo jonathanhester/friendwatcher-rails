@@ -12,6 +12,11 @@ role :app, "jonathanhester.com"                          # This may be the same 
 role :db,  "jonathanhester.com", :primary => true # This is where Rails migrations will run
 
 set :rvm_ruby_string, 'ruby-1.9.3-p327@friendwatcher'
+
+
+#without this, it doesn't install/update gems
+require 'bundler/capistrano'
+
 require "rvm/capistrano"
 
 set :rvm_type, :system  # Copy the exact line. I really mean :system here
