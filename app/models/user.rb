@@ -14,9 +14,9 @@
 #
 
 class User < ActiveRecord::Base
-  has_many :friends
-  has_many :friend_events
-  has_many :devices
+  has_many :friends, :dependent => :destroy
+  has_many :friend_events, :dependent => :destroy
+  has_many :devices, :dependent => :destroy
 
   def self.verify(fbid, token)
     User.where(fbid: fbid, token: token).first
@@ -28,7 +28,7 @@ class User < ActiveRecord::Base
     rescue
       fb_user = nil
     end
-    if fb_user
+    if fb_user.present?
       user = User.where(fbid: fbid).first_or_create
       user.token = token
       user.name = fb_user['name']
@@ -41,6 +41,8 @@ class User < ActiveRecord::Base
   end
 
   def to_json(page = nil, per = nil)
+    page ||= 1
+    per ||= 20
     status = :current
     meta = {
         name: self.name,

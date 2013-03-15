@@ -17,7 +17,6 @@ class FacebookController < ApplicationController
             user = User.find_by_fbid(uid)
             user.try(:receive_update)
           end
-          RelayRequest.delay.relay_request(req)
           render :text => 'Thanks for the update.'
       end
     end
