@@ -42,7 +42,6 @@ class User < ActiveRecord::Base
 
   def to_json(page = nil, per = nil)
     page ||= 1
-    per ||= 20
     status = :current
     meta = {
         name: self.name,
