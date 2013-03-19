@@ -28,7 +28,7 @@ class User < ActiveRecord::Base
     rescue
       fb_user = nil
     end
-    if fb_user.present?
+    if fb_user && fbid.present?
       user = User.where(fbid: fbid).first_or_create
       user.token = token
       user.name = fb_user['name']
