@@ -10,6 +10,8 @@
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  last_synced        :datetime
+#  name               :string(255)
+#  begin_sync         :datetime
 #
 
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
@@ -21,9 +23,13 @@
 one:
   fbid: "asdfasdf"
   token: "asdfasdfasdfasdf"
+  last_synced: '2013-04-01'
+  begin_sync: '2013-04-01'
 #
 no_friends:
   fbid: "779804198"
   token: "asdfasdfasdfasdf"
+  last_synced: '2013-04-01'
+  begin_sync: '2013-04-01'
 
 #  column: value

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130115065307) do
+ActiveRecord::Schema.define(:version => 20130415043501) do
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -71,6 +71,7 @@ ActiveRecord::Schema.define(:version => 20130115065307) do
     t.datetime "updated_at",         :null => false
     t.datetime "last_synced"
     t.string   "name"
+    t.datetime "begin_sync"
   end
 
   add_index "users", ["fbid"], :name => "index_users_on_fbid"

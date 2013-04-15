@@ -10,6 +10,8 @@
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  last_synced        :datetime
+#  name               :string(255)
+#  begin_sync         :datetime
 #
 
 require 'test_helper'
@@ -50,8 +52,10 @@ class UserTest < ActiveSupport::TestCase
 
   test "reload friends - first time" do
     user = users(:no_friends)
+    user.begin_sync = nil
+    user.save
     user.stubs(:fetch_friends).returns([FRIENDS_WILL, FRIENDS_ALTAY])
-    user.reload_friends(true)
+    user.reload_friends
     assert_equal 2, user.friends.current.count
     assert_equal 2, user.friends.count
     assert_equal 0, user.friend_events.count
@@ -172,6 +176,13 @@ class UserTest < ActiveSupport::TestCase
     user.stubs(:fetch_friends).raises(Koala::Facebook::APIError)
     GcmMessager.expects(:invalid_token).returns(true)
     user.force_refresh
+  end
+
+  test "throw exception if trying to update during init" do
+    user = users(:one)
+    user.last_synced = nil
+    user.save
+    assert_raise(RuntimeError) { user.reload_friends_without_delay }
   end
 
 end

@@ -11,6 +11,7 @@
 #  updated_at         :datetime         not null
 #  last_synced        :datetime
 #  name               :string(255)
+#  begin_sync         :datetime
 #
 
 class User < ActiveRecord::Base
@@ -34,7 +35,7 @@ class User < ActiveRecord::Base
       user.name = fb_user['name']
       user.token_invalid = false
       user.save!
-      user.reload_friends(true)
+      user.reload_friends
       return user
     end
     false
@@ -109,10 +110,14 @@ class User < ActiveRecord::Base
     response
   end
 
-  def reload_friends(initial = false)
+  def reload_friends
     added_friends = []
     removed_friends = []
-    self.update_attribute :last_synced, Time.now
+    initial = self.begin_sync.nil?
+    if !initial && !self.last_synced
+      raise "Still initializing user"
+    end
+    self.update_attribute :begin_sync, Time.now
     begin
       response = fetch_friends(self.fbid, self.token)
     rescue
@@ -133,7 +138,6 @@ class User < ActiveRecord::Base
         removed_friends << add_removed_friend(current_friend)
       end
     end
-
     friends.each do |fbid, friend|
       if !current_friends[fbid]
         new_friend = self.friends.where(fbid: fbid).first_or_create
@@ -148,6 +152,7 @@ class User < ActiveRecord::Base
         end
       end
     end
+    self.update_attribute :last_synced, Time.now
     Rails.logger.info "Receive update friends (#{friends.count})"
     GcmMessager.initial_push(registration_ids) if initial
     return [added_friends.compact, removed_friends.compact]
