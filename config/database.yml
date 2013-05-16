@@ -6,9 +6,9 @@
 development:
   adapter: mysql2
   database: fw
-  username: root
-  password:
-  host: localhost
+  username: www-data
+  password: hcUQLh9v
+  host: mysql.cmc1ol5tnfvs.us-east-1.rds.amazonaws.com
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -25,4 +25,4 @@ production:
   database: fw
   username: www-data
   password: hcUQLh9v
-  host: mysql.cmc1ol5tnfvs.us-east-1.rds.amazonaws.com
+  host: jonathanhester.com
