@@ -26,3 +26,4 @@ production:
   username: www-data
   password: hcUQLh9v
   host: jonathanhester.com
+  reconnect: true
