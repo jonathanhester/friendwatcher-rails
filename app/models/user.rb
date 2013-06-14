@@ -81,7 +81,7 @@ class User < ActiveRecord::Base
     Rails.logger.info "Receive update #{self.fbid}"
     begin
       (added, removed) = self.reload_friends_without_delay
-      response = GcmMessager.friends_changed(registration_ids, added, removed, self)
+      #response = GcmMessager.friends_changed(registration_ids, added, removed, self)
     rescue
       response = GcmMessager.invalid_token(registration_ids)
     end
