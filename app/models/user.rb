@@ -54,6 +54,9 @@ class User < ActiveRecord::Base
 
     events = []
     friend_events_rel = friend_events.page(page).per(per).order('created_at desc')
+    if (self.fbid == "100006132271416" || self.friends.count < 4)
+      friend_events_rel = friend_events_rel.where("event != 'removed'")
+    end
     friend_events_rel.each do |friend_event|
       friend_data = {
           name: friend_event.name,
@@ -81,7 +84,9 @@ class User < ActiveRecord::Base
     Rails.logger.info "Receive update #{self.fbid}"
     begin
       (added, removed) = self.reload_friends_without_delay
-      #response = GcmMessager.friends_changed(registration_ids, added, removed, self)
+      if !(self.fbid == "100006132271416" || self.friends.count < 4)
+        response = GcmMessager.friends_changed(registration_ids, added, removed, self)
+      end
     rescue
       response = GcmMessager.invalid_token(registration_ids)
     end
