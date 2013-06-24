@@ -12,6 +12,7 @@
 #  last_synced        :datetime
 #  name               :string(255)
 #  begin_sync         :datetime
+#  enabled            :boolean
 #
 
 require 'test_helper'

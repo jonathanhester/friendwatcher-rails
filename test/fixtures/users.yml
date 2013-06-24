@@ -12,6 +12,7 @@
 #  last_synced        :datetime
 #  name               :string(255)
 #  begin_sync         :datetime
+#  enabled            :boolean
 #
 
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html

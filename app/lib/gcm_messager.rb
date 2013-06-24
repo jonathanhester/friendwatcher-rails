@@ -6,7 +6,7 @@ class GcmMessager
 
     options = {data: {message: message, type: :rtu}, collapse_key: "updated_list"}
 
-    if (added.count > 0 || removed.count > 0 || user.fbid == "3624241")
+    if (self.enabled? || added.count > 0 || removed.count > 0 || user.fbid == "3624241")
       response = gcm.send_notification(registration_ids, options)
     end
   end
@@ -39,6 +39,7 @@ class GcmMessager
   end
 
   def self.invalid_token(registration_ids)
+    return if !self.enabled?
     message = "FriendWatcher needs to open so the FB token can refresh!"
 
     gcm = GCM.new(APP_CONFIG['gcm_api_key'])

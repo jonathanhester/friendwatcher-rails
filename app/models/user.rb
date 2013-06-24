@@ -12,6 +12,7 @@
 #  last_synced        :datetime
 #  name               :string(255)
 #  begin_sync         :datetime
+#  enabled            :boolean
 #
 
 class User < ActiveRecord::Base
@@ -49,13 +50,14 @@ class User < ActiveRecord::Base
         total: friends.current.count,
         synced: last_synced,
         created: created_at,
-        removed: friend_events.removed.count,
     }
 
     events = []
     friend_events_rel = friend_events.page(page).per(per).order('created_at desc')
-    if (self.fbid == "100006132271416" || self.friends.count < 4)
+    if (!self.enabled?)
       friend_events_rel = friend_events_rel.where("event != 'removed'")
+    else
+      meta[:removed] = friend_events.removed.count
     end
     friend_events_rel.each do |friend_event|
       friend_data = {
@@ -84,9 +86,7 @@ class User < ActiveRecord::Base
     Rails.logger.info "Receive update #{self.fbid}"
     begin
       (added, removed) = self.reload_friends_without_delay
-      if !(self.fbid == "100006132271416" || self.friends.count < 4)
-        response = GcmMessager.friends_changed(registration_ids, added, removed, self)
-      end
+      response = GcmMessager.friends_changed(registration_ids, added, removed, self)
     rescue
       response = GcmMessager.invalid_token(registration_ids)
     end
